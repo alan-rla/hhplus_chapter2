@@ -4,6 +4,8 @@ import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './database/database.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DatabaseService } from './database/database.service';
+import { QueuesModule } from './queues/queues.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -15,6 +17,8 @@ import { DatabaseService } from './database/database.service';
     }),
     DatabaseModule,
     EventsModule,
+    QueuesModule,
+    UsersModule,
   ],
   controllers: [],
   providers: [],
