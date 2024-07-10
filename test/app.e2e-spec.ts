@@ -55,19 +55,35 @@ describe('AppController (e2e)', () => {
 
   describe('대기열 생성', () => {
     it('POST /queues', async () => {
+      const userId = 'ffd7a6d2-b742-4b7c-b7e4-a5e435435288';
+      const eventId = 1;
       await request(app.getHttpServer())
         .post('/queues')
-        .send({ userId: 'ffd7a6d2-b742-4b7c-b7e4-a5e435435288' })
+        .send({ userId, eventId })
         .expect(201)
         .expect({
-          success: true,
-          data: {
-            id: 1,
-            userId: 'ffd7a6d2-b742-4b7c-b7e4-a5e435435288',
-            eventId: 1,
-            status: 'STAND_BY',
-            createdAt: dayjs(Date.now()).toISOString(),
-          },
+          id: 1,
+          userId,
+          eventId,
+          status: 'STANDBY',
+          createdAt: dayjs(Date.now()).toISOString(),
+        });
+    });
+  });
+
+  describe('대기열 조회', () => {
+    it('GET /queues/users/{:userId}/events/{:eventId}', async () => {
+      const userId = 'ffd7a6d2-b742-4b7c-b7e4-a5e435435288';
+      const eventId = 1;
+      await request(app.getHttpServer())
+        .post(`/queues/uesrs/${userId}/events/${eventId}`)
+        .expect(201)
+        .expect({
+          id: 1,
+          userId: 'ffd7a6d2-b742-4b7c-b7e4-a5e435435288',
+          eventId: 1,
+          status: 'STANDBY',
+          createdAt: dayjs(Date.now()).toISOString(),
         });
     });
   });
@@ -78,22 +94,19 @@ describe('AppController (e2e)', () => {
       await request(app.getHttpServer())
         .get(`/events/${eventId}/dates`)
         .expect(200)
-        .expect({
-          success: true,
-          data: [
-            {
-              id: 1,
-              eventId,
-              eventDate: dayjs(Date.now()).toISOString(),
-              seatCount: 50,
-              bookStartDate: dayjs(Date.now()).toISOString(),
-              bookEndDate: dayjs(Date.now()).toISOString(),
-              createdAt: dayjs(Date.now()).toISOString(),
-              updatedAt: dayjs(Date.now()).toISOString(),
-              deletedAt: null,
-            },
-          ],
-        });
+        .expect([
+          {
+            id: 1,
+            eventId,
+            eventDate: dayjs(Date.now()).toISOString(),
+            seatCount: 50,
+            bookStartDate: dayjs(Date.now()).toISOString(),
+            bookEndDate: dayjs(Date.now()).toISOString(),
+            createdAt: dayjs(Date.now()).toISOString(),
+            updatedAt: dayjs(Date.now()).toISOString(),
+            deletedAt: null,
+          },
+        ]);
     });
   });
 
@@ -103,22 +116,19 @@ describe('AppController (e2e)', () => {
       await request(app.getHttpServer())
         .get(`/events/properties/${propertyId}/seats`)
         .expect(200)
-        .expect({
-          success: true,
-          data: [
-            {
+        .expect([
+          {
+            id: 1,
+            seatNumber: 1,
+            status: 'AVAILABLE',
+            propertyId,
+            seatProperty: {
               id: 1,
-              seatNumber: 1,
-              status: 'AVAILABLE',
-              propertyId,
-              seatProperty: {
-                id: 1,
-                name: '스탠딩',
-                price: 100000,
-              },
+              name: '스탠딩',
+              price: 100000,
             },
-          ],
-        });
+          },
+        ]);
     });
   });
 
@@ -131,18 +141,15 @@ describe('AppController (e2e)', () => {
         .send({ seatId, userId })
         .expect(201)
         .expect({
-          success: true,
-          data: {
-            id: 1,
-            seatId: 1,
-            userId: 'ffd7a6d2-b742-4b7c-b7e4-a5e435435288',
-            status: 'RESERVED',
-            eventId: 1,
-            eventName: '공연 이름',
-            eventPropertyId: 1,
-            eventDate: dayjs(Date.now()).toISOString(),
-            price: 50000,
-          },
+          id: 1,
+          seatId: 1,
+          userId: 'ffd7a6d2-b742-4b7c-b7e4-a5e435435288',
+          status: 'RESERVED',
+          eventId: 1,
+          eventName: '공연 이름',
+          eventPropertyId: 1,
+          eventDate: dayjs(Date.now()).toISOString(),
+          price: 50000,
         });
     });
   });
@@ -150,17 +157,11 @@ describe('AppController (e2e)', () => {
   describe('사용자 잔액 조회', () => {
     it('POST /users/{:userId}/balance', async () => {
       const userId = 'ffd7a6d2-b742-4b7c-b7e4-a5e435435288';
-      await request(app.getHttpServer())
-        .get(`/users/${userId}/balance`)
-        .expect(200)
-        .expect({
-          success: true,
-          data: {
-            id: 1,
-            userId: 'ffd7a6d2-b742-4b7c-b7e4-a5e435435288',
-            balance: 50000,
-          },
-        });
+      await request(app.getHttpServer()).get(`/users/${userId}/balance`).expect(200).expect({
+        id: 1,
+        userId: 'ffd7a6d2-b742-4b7c-b7e4-a5e435435288',
+        balance: 50000,
+      });
     });
   });
 
@@ -168,19 +169,12 @@ describe('AppController (e2e)', () => {
     it('PUT /users/{:userId}/balance/charge', async () => {
       const userId = 'ffd7a6d2-b742-4b7c-b7e4-a5e435435288';
       const amount = 50000;
-      await request(app.getHttpServer())
-        .put(`/users/${userId}/balance/charge`)
-        .send({ amount })
-        .expect(200)
-        .expect({
-          success: true,
-          data: {
-            id: 1,
-            userId,
-            type: 'CHARGE',
-            amount,
-          },
-        });
+      await request(app.getHttpServer()).put(`/users/${userId}/balance/charge`).send({ amount }).expect(200).expect({
+        id: 1,
+        userId,
+        type: 'CHARGE',
+        amount,
+      });
     });
   });
 
@@ -191,18 +185,15 @@ describe('AppController (e2e)', () => {
         .put(`/events/reservations/${reservationId}/pay`)
         .expect(200)
         .expect({
-          success: true,
-          data: {
-            id: reservationId,
-            seatId: 1,
-            userId: 'ffd7a6d2-b742-4b7c-b7e4-a5e435435288',
-            status: 'PAID',
-            eventId: 1,
-            eventName: '공연 이름',
-            eventPropertyId: 1,
-            eventDate: dayjs(Date.now()).toISOString(),
-            price: 50000,
-          },
+          id: reservationId,
+          seatId: 1,
+          userId: 'ffd7a6d2-b742-4b7c-b7e4-a5e435435288',
+          status: 'PAID',
+          eventId: 1,
+          eventName: '공연 이름',
+          eventPropertyId: 1,
+          eventDate: dayjs(Date.now()).toISOString(),
+          price: 50000,
         });
     });
   });
