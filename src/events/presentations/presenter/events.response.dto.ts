@@ -1,20 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDate, IsEnum, IsInt, IsNotEmpty, IsPositive, IsString, IsUUID, validate } from 'class-validator';
-
-enum SeatStatusEnum {
-  AVAILABLE = 'AVAILABLE',
-  OCCUPIED = 'OCCUPIED',
-}
-
-enum ReservationStatusEnum {
-  RESERVED = 'RESERVED',
-  PENDING = 'PENDING',
-  PAID = 'PAID',
-  CANCELLED = 'CANCELLED',
-  REFUNDED = 'REFUNDED',
-}
+import { Expose } from 'class-transformer';
+import { IsDate, IsEnum, IsInt, IsNotEmpty, IsPositive, IsString, IsUUID } from 'class-validator';
+import { ReservationStatusEnum, SeatStatusEnum } from '../../../libs/types';
 
 export class EventDatesResponseDto {
+  @Expose()
   @ApiProperty({
     example: 1,
   })
@@ -23,6 +13,7 @@ export class EventDatesResponseDto {
   @IsNotEmpty()
   id: number;
 
+  @Expose()
   @ApiProperty({
     example: 1,
   })
@@ -31,6 +22,7 @@ export class EventDatesResponseDto {
   @IsNotEmpty()
   eventId: number;
 
+  @Expose()
   @ApiProperty({
     example: 50,
   })
@@ -39,6 +31,7 @@ export class EventDatesResponseDto {
   @IsNotEmpty()
   seatCount: number;
 
+  @Expose()
   @ApiProperty({
     example: '2024-07-08T06:38:02.060Z',
   })
@@ -46,6 +39,7 @@ export class EventDatesResponseDto {
   @IsNotEmpty()
   bookStartDate: Date;
 
+  @Expose()
   @ApiProperty({
     example: '2024-07-08T06:38:02.060Z',
   })
@@ -53,6 +47,7 @@ export class EventDatesResponseDto {
   @IsNotEmpty()
   bookEndDate: Date;
 
+  @Expose()
   @ApiProperty({
     example: '2024-07-08T06:38:02.060Z',
   })
@@ -60,6 +55,7 @@ export class EventDatesResponseDto {
   @IsNotEmpty()
   createdAt: Date;
 
+  @Expose()
   @ApiProperty({
     example: '2024-07-08T06:38:02.060Z',
   })
@@ -67,25 +63,17 @@ export class EventDatesResponseDto {
   @IsNotEmpty()
   updatedAt: Date;
 
+  @Expose()
   @ApiProperty({
     example: '2024-07-08T06:38:02.060Z',
   })
   @IsDate()
   @IsNotEmpty()
   deletedAt: Date;
-
-  constructor(args) {
-    Object.assign(this, args);
-  }
-
-  static async fromDomain(eventDates) {
-    const [error] = await validate(eventDates);
-    if (error) throw error;
-    return new EventDatesResponseDto(eventDates);
-  }
 }
 
 class SeatProperty {
+  @Expose()
   @ApiProperty({
     example: 1,
   })
@@ -94,13 +82,15 @@ class SeatProperty {
   @IsNotEmpty()
   id: number;
 
+  @Expose()
   @ApiProperty({
     example: '스탠딩',
   })
   @IsString()
   @IsNotEmpty()
-  status: string;
+  name: string;
 
+  @Expose()
   @ApiProperty({
     example: 10000,
   })
@@ -111,6 +101,7 @@ class SeatProperty {
 }
 
 export class EventSeatsResponseDto {
+  @Expose()
   @ApiProperty({
     example: 1,
   })
@@ -119,6 +110,7 @@ export class EventSeatsResponseDto {
   @IsNotEmpty()
   id: number;
 
+  @Expose()
   @ApiProperty({
     example: 1,
   })
@@ -127,12 +119,14 @@ export class EventSeatsResponseDto {
   @IsNotEmpty()
   seatNumber: number;
 
+  @Expose()
   @ApiProperty({
     example: 'AVAILABLE',
   })
   @IsEnum(SeatStatusEnum)
-  status: string;
+  status: SeatStatusEnum;
 
+  @Expose()
   @ApiProperty({
     example: 1,
   })
@@ -141,21 +135,13 @@ export class EventSeatsResponseDto {
   @IsNotEmpty()
   propertyId: number;
 
+  @Expose()
   @ApiProperty({ type: SeatProperty })
   seatProperty: SeatProperty;
-
-  constructor(args) {
-    Object.assign(this, args);
-  }
-
-  static async fromDomain(eventSeats) {
-    const [error] = await validate(eventSeats);
-    if (error) throw error;
-    return new EventSeatsResponseDto(eventSeats);
-  }
 }
 
 export class ReservationResponseDto {
+  @Expose()
   @ApiProperty({
     example: 1,
   })
@@ -164,6 +150,7 @@ export class ReservationResponseDto {
   @IsNotEmpty()
   id: number;
 
+  @Expose()
   @ApiProperty({
     example: 1,
   })
@@ -172,6 +159,7 @@ export class ReservationResponseDto {
   @IsNotEmpty()
   seatId: number;
 
+  @Expose()
   @ApiProperty({
     example: 'ffd7a6d2-b742-4b7c-b7e4-a5e435435288',
   })
@@ -179,12 +167,14 @@ export class ReservationResponseDto {
   @IsNotEmpty()
   userId: string;
 
+  @Expose()
   @ApiProperty({
     example: 'RESERVED',
   })
   @IsEnum(ReservationStatusEnum)
-  status: string;
+  status: ReservationStatusEnum;
 
+  @Expose()
   @ApiProperty({
     example: 1,
   })
@@ -193,13 +183,15 @@ export class ReservationResponseDto {
   @IsNotEmpty()
   eventId: number;
 
+  @Expose()
   @ApiProperty({
     example: '공연 이름',
   })
   @IsString()
   @IsNotEmpty()
-  eventName: number;
+  eventName: string;
 
+  @Expose()
   @ApiProperty({
     example: 1,
   })
@@ -208,6 +200,7 @@ export class ReservationResponseDto {
   @IsNotEmpty()
   eventPropertyId: number;
 
+  @Expose()
   @ApiProperty({
     example: '2024-07-08T06:38:02.060Z',
   })
@@ -215,6 +208,7 @@ export class ReservationResponseDto {
   @IsNotEmpty()
   eventDate: Date;
 
+  @Expose()
   @ApiProperty({
     example: 50000,
   })
@@ -222,14 +216,4 @@ export class ReservationResponseDto {
   @IsPositive()
   @IsNotEmpty()
   price: number;
-
-  constructor(args) {
-    Object.assign(this, args);
-  }
-
-  static async fromDomain(reservation) {
-    const [error] = await validate(reservation);
-    if (error) throw error;
-    return new ReservationResponseDto(reservation);
-  }
 }

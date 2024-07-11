@@ -1,13 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDate, IsEnum, IsInt, IsNotEmpty, IsPositive, IsUUID, validate } from 'class-validator';
-
-enum QueueStatusEnum {
-  STANDBY = 'STANDBY',
-  ACTIVATED = 'ACTIVATED',
-  EXPIRED = 'EXPIRED',
-}
+import { Expose } from 'class-transformer';
+import { IsDate, IsEnum, IsInt, IsNotEmpty, IsOptional, IsPositive, IsUUID } from 'class-validator';
+import { QueueStatusEnum } from '../../../libs/types';
 
 export class QueueResponseDto {
+  @Expose()
   @ApiProperty({
     example: 1,
   })
@@ -16,6 +13,7 @@ export class QueueResponseDto {
   @IsNotEmpty()
   id: number;
 
+  @Expose()
   @ApiProperty({
     example: 'ffd7a6d2-b742-4b7c-b7e4-a5e435435288',
   })
@@ -23,6 +21,7 @@ export class QueueResponseDto {
   @IsNotEmpty()
   userId: string;
 
+  @Expose()
   @ApiProperty({
     example: 1,
   })
@@ -31,6 +30,7 @@ export class QueueResponseDto {
   @IsNotEmpty()
   eventId: number;
 
+  @Expose()
   @ApiProperty({
     example: 'STANDBY',
     enum: QueueStatusEnum,
@@ -39,6 +39,7 @@ export class QueueResponseDto {
   @IsNotEmpty()
   status: QueueStatusEnum;
 
+  @Expose()
   @ApiProperty({
     example: '2024-07-08T06:38:02.060Z',
   })
@@ -46,13 +47,19 @@ export class QueueResponseDto {
   @IsNotEmpty()
   createdAt: Date;
 
-  constructor(args) {
-    Object.assign(this, args);
-  }
+  @Expose()
+  @ApiProperty({
+    example: '2024-07-08T06:38:02.060Z',
+  })
+  @IsDate()
+  @IsNotEmpty()
+  updatedAt: Date;
 
-  static async fromDomain(queue) {
-    const [error] = await validate(queue);
-    if (error) throw error;
-    return new QueueResponseDto(queue);
-  }
+  @Expose()
+  @ApiProperty({
+    example: '2024-07-08T06:38:02.060Z',
+  })
+  @IsDate()
+  @IsOptional()
+  deletedAt: Date;
 }

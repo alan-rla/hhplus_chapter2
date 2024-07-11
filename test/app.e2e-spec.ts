@@ -3,11 +3,12 @@ import { BadRequestException, INestApplication, ValidationPipe } from '@nestjs/c
 import request from 'supertest';
 import { AppModule } from './../src/app.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { DatabaseModule } from 'src/database/database.module';
-import { DatabaseService } from 'src/database/database.service';
-import { EventsModule } from 'src/events/events.module';
-import { QueuesModule } from 'src/queues/queues.module';
 import dayjs from 'dayjs';
+import { DatabaseModule } from '../src/database/database.module';
+import { DatabaseService } from '../src/database/database.service';
+import { EventsModule } from '../src/events/events.module';
+import { QueuesModule } from '../src/queues/queues.module';
+import { UsersModule } from '../src/users/users.module';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
@@ -24,6 +25,7 @@ describe('AppController (e2e)', () => {
         DatabaseModule,
         EventsModule,
         QueuesModule,
+        UsersModule,
       ],
     }).compile();
 

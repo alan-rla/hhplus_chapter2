@@ -1,7 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsInt, IsNotEmpty, IsPositive, IsUUID, validate } from 'class-validator';
+import { Expose } from 'class-transformer';
+import { IsEnum, IsInt, IsNotEmpty, IsPositive, IsUUID } from 'class-validator';
+import { BalanceTypeEnum } from '../../../libs/types';
 
 export class GetUserBalanceResponseDto {
+  @Expose()
   @ApiProperty({
     example: 1,
   })
@@ -10,6 +13,7 @@ export class GetUserBalanceResponseDto {
   @IsNotEmpty()
   id: number;
 
+  @Expose()
   @ApiProperty({
     example: 'ffd7a6d2-b742-4b7c-b7e4-a5e435435288',
   })
@@ -17,6 +21,7 @@ export class GetUserBalanceResponseDto {
   @IsNotEmpty()
   userId: string;
 
+  @Expose()
   @ApiProperty({
     example: 50000,
   })
@@ -24,24 +29,10 @@ export class GetUserBalanceResponseDto {
   @IsPositive()
   @IsNotEmpty()
   balance: number;
-
-  constructor(args) {
-    Object.assign(this, args);
-  }
-
-  static async fromDomain(user) {
-    const [error] = await validate(user);
-    if (error) throw error;
-    return new GetUserBalanceResponseDto(user);
-  }
-}
-
-enum BalanceStatusEnum {
-  CHARGE = 'CHARGE',
-  USE = 'USE',
 }
 
 export class PutUserBalanceResponseDto {
+  @Expose()
   @ApiProperty({
     example: 1,
   })
@@ -50,6 +41,7 @@ export class PutUserBalanceResponseDto {
   @IsNotEmpty()
   id: number;
 
+  @Expose()
   @ApiProperty({
     example: 'ffd7a6d2-b742-4b7c-b7e4-a5e435435288',
   })
@@ -57,14 +49,16 @@ export class PutUserBalanceResponseDto {
   @IsNotEmpty()
   userId: string;
 
+  @Expose()
   @ApiProperty({
     example: 'CHARGE',
-    enum: BalanceStatusEnum,
+    enum: BalanceTypeEnum,
   })
-  @IsEnum(BalanceStatusEnum)
+  @IsEnum(BalanceTypeEnum)
   @IsNotEmpty()
-  status: BalanceStatusEnum;
+  type: BalanceTypeEnum;
 
+  @Expose()
   @ApiProperty({
     example: 50000,
   })
@@ -72,14 +66,4 @@ export class PutUserBalanceResponseDto {
   @IsPositive()
   @IsNotEmpty()
   amount: number;
-
-  constructor(args) {
-    Object.assign(this, args);
-  }
-
-  static async fromDomain(user) {
-    const [error] = await validate(user);
-    if (error) throw error;
-    return new PutUserBalanceResponseDto(user);
-  }
 }
