@@ -1,9 +1,8 @@
 import { QueueStatusEnum } from '../../../libs/types';
 
-export type QueuePostProps = {
+export type UseBalanceProps = {
   userId: string;
-  eventId: number;
-  status: QueueStatusEnum.STANDBY;
+  amount: number;
 };
 
 export type QueueGetProps = {
