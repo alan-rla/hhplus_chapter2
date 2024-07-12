@@ -50,4 +50,11 @@ export class PutReservationDto {
   @IsPositive()
   @IsNotEmpty()
   reservationId: number;
+
+  @ApiProperty({
+    example: 'ffd7a6d2-b742-4b7c-b7e4-a5e435435288',
+  })
+  @IsUUID()
+  @IsNotEmpty()
+  userId: string;
 }
