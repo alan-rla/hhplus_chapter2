@@ -7,6 +7,7 @@ import { DatabaseService } from './database/database.service';
 import { QueuesModule } from './queues/queues.module';
 import { UsersModule } from './users/users.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { GuardsModule } from './libs/guards/guards.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     EventsModule,
     QueuesModule,
     UsersModule,
+    GuardsModule,
   ],
   controllers: [],
   providers: [],
