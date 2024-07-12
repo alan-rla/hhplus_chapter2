@@ -3,20 +3,18 @@ import { GetUserDto, PutUserBalanceDto } from './dto/users.dto';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { PutUserBalanceResponseDto, GetUserBalanceResponseDto } from './presenter/users.response.dto';
 import { createResponse } from '../../libs/response';
-import { BalanceTypeEnum } from '../../libs/types';
+import { UsersService } from '../application/users.service';
 
 @Controller('users')
 export class UsersController {
+  constructor(private readonly usersService: UsersService) {}
+
   @ApiResponse({ type: GetUserBalanceResponseDto, status: 200 })
   @ApiOperation({ summary: '사용자 잔액 조회' })
   @Get(':userId/balance')
   async getUserBalance(@Param() param: GetUserDto): Promise<GetUserBalanceResponseDto> {
     const { userId } = param;
-    const result = {
-      id: 1,
-      userId,
-      balance: 50000,
-    };
+    const result = await this.usersService.getUserBalanceById(userId);
     return await createResponse(GetUserBalanceResponseDto, result);
   }
 
@@ -29,12 +27,7 @@ export class UsersController {
   ): Promise<PutUserBalanceResponseDto> {
     const { userId } = param;
     const { amount } = body;
-    const result = {
-      id: 1,
-      userId,
-      type: BalanceTypeEnum.CHARGE,
-      amount,
-    };
+    const result = await this.usersService.charge(userId, amount);
     return await createResponse(PutUserBalanceResponseDto, result);
   }
 }

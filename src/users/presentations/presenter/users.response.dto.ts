@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
-import { IsEnum, IsInt, IsNotEmpty, IsPositive, IsUUID } from 'class-validator';
+import { IsDate, IsEnum, IsInt, IsNotEmpty, IsPositive, IsUUID } from 'class-validator';
 import { BalanceTypeEnum } from '../../../libs/types';
 
 export class GetUserBalanceResponseDto {
@@ -66,4 +66,11 @@ export class PutUserBalanceResponseDto {
   @IsPositive()
   @IsNotEmpty()
   amount: number;
+
+  @Expose()
+  @ApiProperty({
+    example: '2024-07-08T06:38:02.060Z',
+  })
+  @IsDate()
+  createdAt: Date;
 }
