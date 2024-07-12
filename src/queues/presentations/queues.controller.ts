@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Logger, Param, Post } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { createResponse } from '../../libs/response';
-import { CreateQueueDto, GetQueueDto } from './dto/queue.dto';
-import { QueueResponseDto } from './presenter/queue.response.dto';
+import { CreateQueueDto, GetQueueDto } from './dto/queues.dto';
+import { QueueResponseDto } from './presenter/queues.response.dto';
 import { QueuesService } from '../application/queues.service';
+import { Cron } from '@nestjs/schedule';
 
 @Controller('queues')
 export class QueuesController {
@@ -26,5 +27,33 @@ export class QueuesController {
     const { userId, eventId } = param;
     const result = await this.queuesService.getByUserIdAndEventId(userId, eventId);
     return await createResponse(QueueResponseDto, result);
+  }
+
+  private isActivatorRunning = false;
+  @Cron('*/10 * * * * *', { name: 'queueActivateManager' })
+  async queueActivateManager(): Promise<void> {
+    if (this.isActivatorRunning) {
+      Logger.log('task already running');
+      return;
+    }
+
+    this.isActivatorRunning = true;
+    await this.queuesService.queueActivateManager();
+    this.isActivatorRunning = false;
+    return;
+  }
+
+  private isExpirerRunning = false;
+  @Cron('*/10 * * * * *', { name: 'queueExpireManager' })
+  async queueExpireManager(): Promise<void> {
+    if (this.isExpirerRunning) {
+      Logger.log('task already running');
+      return;
+    }
+
+    this.isExpirerRunning = true;
+    await this.queuesService.queueExpireManager();
+    this.isExpirerRunning = false;
+    return;
   }
 }

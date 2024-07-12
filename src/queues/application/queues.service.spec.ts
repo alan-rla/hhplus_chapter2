@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { QueuesService } from './queues.service';
-import { QueuesRepository } from '../domain/repositories/queue.repository';
+import { QueuesRepository } from '../domain/repositories/queues.repository';
 import { QueueStatusEnum } from '../../libs/types';
 import dayjs from 'dayjs';
 
