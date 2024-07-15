@@ -8,6 +8,9 @@ import { QueuesModule } from './queues/queues.module';
 import { UsersModule } from './users/users.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { GuardsModule } from './libs/guards/guards.module';
+import { addTransactionalDataSource } from 'typeorm-transactional';
+import { DataSource } from 'typeorm';
+import { dataSourceOptions } from './database/database.config';
 
 @Module({
   imports: [
@@ -16,6 +19,10 @@ import { GuardsModule } from './libs/guards/guards.module';
       imports: [DatabaseModule],
       useClass: DatabaseService,
       inject: [DatabaseService],
+      async dataSourceFactory(options) {
+        if (!options) throw new Error('Invalid options passed');
+        return addTransactionalDataSource(new DataSource(dataSourceOptions));
+      },
     }),
     ScheduleModule.forRoot(),
     EventsModule,
