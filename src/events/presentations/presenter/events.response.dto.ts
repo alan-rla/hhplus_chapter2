@@ -24,6 +24,14 @@ export class EventDatesResponseDto {
 
   @Expose()
   @ApiProperty({
+    example: '2024-07-08T06:38:02.060Z',
+  })
+  @IsDate()
+  @IsNotEmpty()
+  eventDate: Date;
+
+  @Expose()
+  @ApiProperty({
     example: 50,
   })
   @IsInt()
@@ -133,7 +141,16 @@ export class EventSeatsResponseDto {
   @IsInt()
   @IsPositive()
   @IsNotEmpty()
-  propertyId: number;
+  eventPropertyId: number;
+
+  @Expose()
+  @ApiProperty({
+    example: 1,
+  })
+  @IsInt()
+  @IsPositive()
+  @IsNotEmpty()
+  seatPropertyId: number;
 
   @Expose()
   @ApiProperty({ type: SeatProperty })
@@ -173,6 +190,30 @@ export class ReservationResponseDto {
   })
   @IsEnum(ReservationStatusEnum)
   status: ReservationStatusEnum;
+
+  @Expose()
+  @ApiProperty({
+    example: '2024-07-08T06:38:02.060Z',
+  })
+  @IsDate()
+  @IsNotEmpty()
+  createdAt: Date;
+
+  @Expose()
+  @ApiProperty({
+    example: '2024-07-08T06:38:02.060Z',
+  })
+  @IsDate()
+  @IsNotEmpty()
+  updatedAt: Date;
+
+  @Expose()
+  @ApiProperty({
+    example: '2024-07-08T06:38:02.060Z',
+  })
+  @IsDate()
+  @IsNotEmpty()
+  deletedAt: Date;
 
   @Expose()
   @ApiProperty({
