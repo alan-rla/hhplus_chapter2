@@ -4,10 +4,13 @@ import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import { HttpExceptionFilter } from './httpException.filter';
 import { DocumentBuilder, SwaggerCustomOptions, SwaggerModule } from '@nestjs/swagger';
 import { initializeTransactionalContext, StorageDriver } from 'typeorm-transactional';
+import { winstonLogger } from './libs/utils/winston.utils';
 
 async function bootstrap() {
   initializeTransactionalContext({ storageDriver: StorageDriver.AUTO });
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: winstonLogger,
+  });
 
   app.useGlobalPipes(
     new ValidationPipe({
