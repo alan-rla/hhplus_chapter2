@@ -2,46 +2,37 @@ import { Injectable } from '@nestjs/common';
 import { UsersRepository } from '../../domain/repositories/users.repository';
 import { BalanceHistory, UserBalance } from '../../domain/models/users.model';
 import { BalanceHistoryEntity, UserBalanceEntity } from '../entities';
-import { UserMapper } from '../mappers/users.mapper';
 import { BalanceTypeEnum } from '../../../libs/types';
-import { EntityManager } from 'typeorm';
+import { DataSource } from 'typeorm';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { Mapper } from '../../../libs/mappers';
 
 @Injectable()
 export class UsersRepositoryImpl implements UsersRepository {
-  constructor(private entityManager: EntityManager) {}
+  constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
 
-  getManager(): EntityManager {
-    return this.entityManager;
+  async getUserBalanceById(userId: string): Promise<UserBalance> {
+    const entity = await Mapper.classTransformer(UserBalanceEntity, { userId });
+    const userBalance = await this.dataSource.getRepository(UserBalanceEntity).findOne({ where: entity });
+    return await Mapper.classTransformer(UserBalance, userBalance);
   }
 
-  async getUserBalanceById(userId: string, transactionalEntityManager?: EntityManager): Promise<UserBalance> {
-    const entity = UserMapper.toUserBalanceEntity({ userId });
-    const userBalance = await (transactionalEntityManager ? transactionalEntityManager : this.getManager())
-      .getRepository(UserBalanceEntity)
-      .findOne({ where: entity });
-    return UserMapper.toUserBalanceDomain(userBalance);
-  }
-
-  async putUserBalance(
-    userId: string,
-    balance: number,
-    transactionalEntityManager: EntityManager,
-  ): Promise<UserBalance> {
-    const entity = UserMapper.toUserBalanceEntity({ userId, balance });
-    const userBalance = await transactionalEntityManager
+  async putUserBalance(userId: string, balance: number): Promise<boolean> {
+    const entity = await Mapper.classTransformer(UserBalanceEntity, { userId, balance });
+    const userBalance = await this.dataSource
       .createQueryBuilder()
       .update(UserBalanceEntity)
       .set(entity)
       .where('userId = :userId', { userId })
       .execute();
 
-    return UserMapper.toUserBalanceDomain(userBalance.raw[0]);
+    return userBalance.affected[0] ? true : false;
   }
 
-  async charge(userId: string, amount: number, transactionalEntityManager: EntityManager): Promise<BalanceHistory> {
+  async charge(userId: string, amount: number): Promise<BalanceHistory> {
     const type = BalanceTypeEnum.CHARGE;
-    const entity = UserMapper.toBalanceHistoryEntity({ userId, amount, type });
-    const balanceHistory = await transactionalEntityManager
+    const entity = await Mapper.classTransformer(BalanceHistoryEntity, { userId, amount, type });
+    const balanceHistory = await this.dataSource
       .createQueryBuilder()
       .insert()
       .into(BalanceHistoryEntity)
@@ -49,13 +40,13 @@ export class UsersRepositoryImpl implements UsersRepository {
       .returning('*')
       .execute();
 
-    return UserMapper.toBalanceHistoryDomain(balanceHistory.raw[0]);
+    return await Mapper.classTransformer(BalanceHistory, balanceHistory.raw[0]);
   }
 
-  async use(userId: string, amount: number, transactionalEntityManager: EntityManager): Promise<BalanceHistory> {
+  async use(userId: string, amount: number): Promise<BalanceHistory> {
     const type = BalanceTypeEnum.USE;
-    const entity = UserMapper.toBalanceHistoryEntity({ userId, amount, type });
-    const balanceHistory = await transactionalEntityManager
+    const entity = await Mapper.classTransformer(BalanceHistoryEntity, { userId, amount, type });
+    const balanceHistory = await this.dataSource
       .createQueryBuilder()
       .insert()
       .into(BalanceHistoryEntity)
@@ -63,13 +54,13 @@ export class UsersRepositoryImpl implements UsersRepository {
       .returning('*')
       .execute();
 
-    return UserMapper.toBalanceHistoryDomain(balanceHistory.raw[0]);
+    return await Mapper.classTransformer(BalanceHistory, balanceHistory.raw[0]);
   }
 
-  async refund(userId: string, amount: number, transactionalEntityManager: EntityManager): Promise<BalanceHistory> {
+  async refund(userId: string, amount: number): Promise<BalanceHistory> {
     const type = BalanceTypeEnum.REFUND;
-    const entity = UserMapper.toBalanceHistoryEntity({ userId, amount, type });
-    const balanceHistory = await transactionalEntityManager
+    const entity = await Mapper.classTransformer(BalanceHistoryEntity, { userId, amount, type });
+    const balanceHistory = await this.dataSource
       .createQueryBuilder()
       .insert()
       .into(BalanceHistoryEntity)
@@ -77,6 +68,6 @@ export class UsersRepositoryImpl implements UsersRepository {
       .returning('*')
       .execute();
 
-    return UserMapper.toBalanceHistoryDomain(balanceHistory.raw[0]);
+    return await Mapper.classTransformer(BalanceHistory, balanceHistory.raw[0]);
   }
 }

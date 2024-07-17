@@ -1,17 +1,20 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersService } from './users.service';
 import { UsersRepository } from '../domain/repositories/users.repository';
-import dayjs from 'dayjs';
 import { BalanceTypeEnum } from '../../libs/types';
-import { DataSource, EntityManager } from 'typeorm';
-
-const mockUsersRepository = {
-  getUserBalanceById: jest.fn(),
-  putUserBalance: jest.fn(),
-  charge: jest.fn(),
-  use: jest.fn(),
-  refund: jest.fn(),
-};
+import { DataSource } from 'typeorm';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { DatabaseModule } from '../../database/database.module';
+import { DatabaseService } from '../../database/database.service';
+import {
+  addTransactionalDataSource,
+  getDataSourceByName,
+  initializeTransactionalContext,
+  StorageDriver,
+} from 'typeorm-transactional';
+import { dataSourceOptions } from '../../database/database.config';
+import { UsersRepositoryImpl } from '../infrastructure/repositories/users.repository';
+import { HttpException } from '@nestjs/common';
 
 const userId = 'ffd7a6d2-b742-4b7c-b7e4-a5e435435288';
 const userBalance = {
@@ -28,21 +31,7 @@ const balanceHistory = {
   userId,
   type: null,
   amount,
-  createdAt: dayjs(Date.now()).toDate(),
-};
-
-const entityManagerMock: Partial<EntityManager> = {
-  transaction: jest.fn().mockImplementation(async (cb) =>
-    cb({
-      findOne: jest.fn(),
-      save: jest.fn(),
-    }),
-  ),
-};
-
-const dataSourceMock: Partial<DataSource> = {
-  manager: entityManagerMock as EntityManager,
-  createEntityManager: jest.fn().mockReturnValue(entityManagerMock),
+  createdAt: expect.any(Date),
 };
 
 describe('UsersService', () => {
@@ -51,13 +40,23 @@ describe('UsersService', () => {
   let repository: UsersRepository;
 
   beforeEach(async () => {
+    initializeTransactionalContext({ storageDriver: StorageDriver.AUTO });
     module = await Test.createTestingModule({
+      imports: [
+        TypeOrmModule.forRootAsync({
+          imports: [DatabaseModule],
+          useClass: DatabaseService,
+          inject: [DatabaseService],
+          dataSourceFactory: async () => {
+            return getDataSourceByName('default') || addTransactionalDataSource(new DataSource(dataSourceOptions));
+          },
+        }),
+      ],
       providers: [
         UsersService,
-        { provide: DataSource, useValue: dataSourceMock },
         {
           provide: 'UsersRepository',
-          useValue: mockUsersRepository,
+          useClass: UsersRepositoryImpl,
         },
       ],
     }).compile();
@@ -66,7 +65,7 @@ describe('UsersService', () => {
     repository = module.get<UsersRepository>('UsersRepository');
   });
 
-  afterEach(async () => {
+  afterAll(async () => {
     await module.close();
   });
 
@@ -78,7 +77,14 @@ describe('UsersService', () => {
     // 사용자 잔액 조회
     it('should return current balance of a user', async () => {
       jest.spyOn(repository, 'getUserBalanceById').mockResolvedValue(userBalance);
-      await expect(service.getUserBalanceById(userId)).resolves.toEqual(userBalance);
+      await expect(service.getUserBalanceById({ userId })).resolves.toEqual(userBalance);
+    });
+    // 사용자 잔액 정보 없음
+    it('should throw error if user balance info does not exist', async () => {
+      jest.spyOn(repository, 'getUserBalanceById').mockResolvedValue(null);
+      await expect(service.getUserBalanceById({ userId })).rejects.toThrow(
+        new HttpException('USER_BALANCE_NOT_FOUND', 500),
+      );
     });
   });
 
@@ -86,10 +92,16 @@ describe('UsersService', () => {
     // 사용자 잔액 충전
     it('should return charge balance history', async () => {
       balanceHistory.type = charge;
-      jest.useFakeTimers();
       jest.spyOn(repository, 'getUserBalanceById').mockResolvedValue(userBalance);
       jest.spyOn(repository, 'charge').mockResolvedValue(balanceHistory);
-      await expect(service.charge(userId, amount)).resolves.toEqual(balanceHistory);
+      await expect(service.charge({ userId, amount })).resolves.toEqual(balanceHistory);
+    });
+    // 사용자 잔액 정보 없음
+    it('should throw error if user balance info does not exist', async () => {
+      jest.spyOn(repository, 'getUserBalanceById').mockResolvedValue(null);
+      await expect(service.charge({ userId, amount })).rejects.toThrow(
+        new HttpException('USER_BALANCE_NOT_FOUND', 500),
+      );
     });
   });
 
@@ -97,10 +109,21 @@ describe('UsersService', () => {
     // 사용자 잔액 사용
     it('should return use balance history', async () => {
       balanceHistory.type = use;
-      jest.useFakeTimers();
       jest.spyOn(repository, 'getUserBalanceById').mockResolvedValue(userBalance);
       jest.spyOn(repository, 'use').mockResolvedValue(balanceHistory);
-      await expect(service.charge(userId, amount)).resolves.toEqual(balanceHistory);
+      await expect(service.use({ userId, amount })).resolves.toEqual(balanceHistory);
+    });
+    // 사용자 잔액 정보 없음
+    it('should throw error if user balance info does not exist', async () => {
+      jest.spyOn(repository, 'getUserBalanceById').mockResolvedValue(null);
+      await expect(service.use({ userId, amount })).rejects.toThrow(new HttpException('USER_BALANCE_NOT_FOUND', 500));
+    });
+    // 사용자 잔액 부족
+    it('should throw error if user balance info does not exist', async () => {
+      jest.spyOn(repository, 'getUserBalanceById').mockResolvedValue(userBalance);
+      await expect(service.use({ userId, amount: 100000 })).rejects.toThrow(
+        new HttpException('NOT_ENOUGH_BALANCE', 500),
+      );
     });
   });
 
@@ -108,10 +131,16 @@ describe('UsersService', () => {
     // 사용자 환불
     it('should return refund balance history', async () => {
       balanceHistory.type = refund;
-      jest.useFakeTimers();
       jest.spyOn(repository, 'getUserBalanceById').mockResolvedValue(userBalance);
-      jest.spyOn(repository, 'use').mockResolvedValue(balanceHistory);
-      await expect(service.charge(userId, amount)).resolves.toEqual(balanceHistory);
+      jest.spyOn(repository, 'refund').mockResolvedValue(balanceHistory);
+      await expect(service.refund({ userId, amount })).resolves.toEqual(balanceHistory);
+    });
+    // 사용자 잔액 정보 없음
+    it('should throw error if user balance info does not exist', async () => {
+      jest.spyOn(repository, 'getUserBalanceById').mockResolvedValue(null);
+      await expect(service.refund({ userId, amount })).rejects.toThrow(
+        new HttpException('USER_BALANCE_NOT_FOUND', 500),
+      );
     });
   });
 });

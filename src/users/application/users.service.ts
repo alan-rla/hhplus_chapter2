@@ -1,65 +1,51 @@
 import { HttpException, Inject, Injectable } from '@nestjs/common';
 import { UsersRepository } from '../domain/repositories/users.repository';
-import { BalanceHistory, UserBalance } from '../domain/models/users.model';
-import { DataSource } from 'typeorm';
+import { BalanceHistory, BalanceHistoryProps, UserBalance, UserBalanceProps } from '../domain/models/users.model';
+import { Transactional } from 'typeorm-transactional';
 
 @Injectable()
 export class UsersService {
   constructor(
     @Inject('UsersRepository')
     private readonly usersRepository: UsersRepository,
-    private readonly dataSource: DataSource,
   ) {}
 
-  async getUserBalanceById(userId: string): Promise<UserBalance> {
-    const userBalance = await this.usersRepository.getUserBalanceById(userId);
-    if (Object.keys(userBalance).length === 0)
-      throw new HttpException({ status: 'USER_BALANCE_NOT_FOUND', msg: '사용자 잔액 정보 없음' }, 500);
+  async getUserBalanceById(args: UserBalanceProps): Promise<UserBalance> {
+    const userBalance = await this.usersRepository.getUserBalanceById(args.userId);
+    if (!userBalance) throw new HttpException('USER_BALANCE_NOT_FOUND', 500);
     return userBalance;
   }
 
-  async charge(userId: string, amount: number): Promise<BalanceHistory> {
-    try {
-      return await this.dataSource.createEntityManager().transaction(async (transactionalEntityManager) => {
-        const userBalance = await this.usersRepository.getUserBalanceById(userId, transactionalEntityManager);
-        userBalance.balance += amount;
-        await this.usersRepository.putUserBalance(userId, userBalance.balance, transactionalEntityManager);
-        const balanceHistory = await this.usersRepository.charge(userId, amount, transactionalEntityManager);
-        return balanceHistory;
-      });
-    } catch (err) {
-      throw err;
-    }
+  @Transactional()
+  async charge(args: BalanceHistoryProps): Promise<BalanceHistory> {
+    const userBalance = await this.usersRepository.getUserBalanceById(args.userId);
+    if (!userBalance) throw new HttpException('USER_BALANCE_NOT_FOUND', 500);
+    userBalance.balance += args.amount;
+    await this.usersRepository.putUserBalance(args.userId, userBalance.balance);
+    const balanceHistory = await this.usersRepository.charge(args.userId, args.amount);
+    return balanceHistory;
   }
 
-  async use(userId: string, amount: number): Promise<BalanceHistory> {
-    try {
-      return await this.dataSource.createEntityManager().transaction(async (transactionalEntityManager) => {
-        const userBalance = await this.usersRepository.getUserBalanceById(userId, transactionalEntityManager);
-        userBalance.balance -= amount;
+  @Transactional()
+  async use(args: BalanceHistoryProps): Promise<BalanceHistory> {
+    const userBalance = await this.usersRepository.getUserBalanceById(args.userId);
+    if (!userBalance) throw new HttpException('USER_BALANCE_NOT_FOUND', 500);
+    userBalance.balance -= args.amount;
 
-        if (userBalance.balance < 0) throw new HttpException({ status: 'NOT_ENOUGH_BALANCE', msg: '잔액 부족' }, 500);
+    if (userBalance.balance < 0) throw new HttpException('NOT_ENOUGH_BALANCE', 500);
 
-        await this.usersRepository.putUserBalance(userId, amount, transactionalEntityManager);
-        const balanceHistory = await this.usersRepository.use(userId, amount, transactionalEntityManager);
-        return balanceHistory;
-      });
-    } catch (err) {
-      throw err;
-    }
+    await this.usersRepository.putUserBalance(args.userId, args.amount);
+    const balanceHistory = await this.usersRepository.use(args.userId, args.amount);
+    return balanceHistory;
   }
 
-  async refund(userId: string, amount: number): Promise<BalanceHistory> {
-    try {
-      return await this.dataSource.createEntityManager().transaction(async (transactionalEntityManager) => {
-        const userBalance = await this.usersRepository.getUserBalanceById(userId, transactionalEntityManager);
-        userBalance.balance += amount;
-        await this.usersRepository.putUserBalance(userId, amount, transactionalEntityManager);
-        const balanceHistory = await this.usersRepository.refund(userId, amount, transactionalEntityManager);
-        return balanceHistory;
-      });
-    } catch (err) {
-      throw err;
-    }
+  @Transactional()
+  async refund(args: BalanceHistoryProps): Promise<BalanceHistory> {
+    const userBalance = await this.usersRepository.getUserBalanceById(args.userId);
+    if (!userBalance) throw new HttpException('USER_BALANCE_NOT_FOUND', 500);
+    userBalance.balance += args.amount;
+    await this.usersRepository.putUserBalance(args.userId, args.amount);
+    const balanceHistory = await this.usersRepository.refund(args.userId, args.amount);
+    return balanceHistory;
   }
 }

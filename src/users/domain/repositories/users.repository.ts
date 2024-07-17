@@ -1,14 +1,13 @@
-import { EntityManager } from 'typeorm';
 import { BalanceHistory, UserBalance } from '../models/users.model';
 
-export interface UsersRepository {
-  getUserBalanceById(userId: string, transactionalEntityManager?: EntityManager): Promise<UserBalance>;
+export abstract class UsersRepository {
+  abstract getUserBalanceById(userId: string): Promise<UserBalance>;
 
-  putUserBalance(userId: string, balance: number, transactionalEntityManager?: EntityManager): Promise<UserBalance>;
+  abstract putUserBalance(userId: string, balance: number): Promise<boolean>;
 
-  charge(userId: string, amount: number, transactionalEntityManager?: EntityManager): Promise<BalanceHistory>;
+  abstract charge(userId: string, amount: number): Promise<BalanceHistory>;
 
-  use(userId: string, amount: number, transactionalEntityManager?: EntityManager): Promise<BalanceHistory>;
+  abstract use(userId: string, amount: number): Promise<BalanceHistory>;
 
-  refund(userId: string, amount: number, transactionalEntityManager?: EntityManager): Promise<BalanceHistory>;
+  abstract refund(userId: string, amount: number): Promise<BalanceHistory>;
 }

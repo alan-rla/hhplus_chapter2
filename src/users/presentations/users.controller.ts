@@ -2,8 +2,9 @@ import { Body, Controller, Get, Param, Put } from '@nestjs/common';
 import { GetUserDto, PutUserBalanceDto } from './dto/users.dto';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { PutUserBalanceResponseDto, GetUserBalanceResponseDto } from './presenter/users.response.dto';
-import { createResponse } from '../../libs/response';
+import { Mapper } from '../../libs/mappers';
 import { UsersService } from '../application/users.service';
+import { BalanceHistoryProps, UserBalanceProps } from '../domain/models/users.model';
 
 @Controller('users')
 export class UsersController {
@@ -13,9 +14,9 @@ export class UsersController {
   @ApiOperation({ summary: '사용자 잔액 조회' })
   @Get(':userId/balance')
   async getUserBalance(@Param() param: GetUserDto): Promise<GetUserBalanceResponseDto> {
-    const { userId } = param;
-    const result = await this.usersService.getUserBalanceById(userId);
-    return await createResponse(GetUserBalanceResponseDto, result);
+    const args = await Mapper.classTransformer(UserBalanceProps, param);
+    const result = await this.usersService.getUserBalanceById(args);
+    return await Mapper.classTransformer(GetUserBalanceResponseDto, result);
   }
 
   @ApiResponse({ type: PutUserBalanceResponseDto, status: 201 })
@@ -25,9 +26,8 @@ export class UsersController {
     @Param() param: GetUserDto,
     @Body() body: PutUserBalanceDto,
   ): Promise<PutUserBalanceResponseDto> {
-    const { userId } = param;
-    const { amount } = body;
-    const result = await this.usersService.charge(userId, amount);
-    return await createResponse(PutUserBalanceResponseDto, result);
+    const args = await Mapper.classTransformer(BalanceHistoryProps, { ...param, ...body });
+    const result = await this.usersService.charge(args);
+    return await Mapper.classTransformer(PutUserBalanceResponseDto, result);
   }
 }
