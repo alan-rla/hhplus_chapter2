@@ -1,4 +1,4 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { QueuesRepository } from '../../queues/domain/repositories/queues.repository';
 import { QueueStatusEnum } from '../types';
@@ -11,6 +11,7 @@ type QueueInfo = {
 export class QueueGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
+    @Inject('QueuesRepository')
     private readonly queuesRepository: QueuesRepository,
   ) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {
