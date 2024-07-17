@@ -21,7 +21,7 @@ export class GetEventDateSeatsDto {
   @IsInt()
   @IsPositive()
   @IsNotEmpty()
-  propertyId: number;
+  eventPropertyId: number;
 }
 
 export class PostSeatReservationDto {
