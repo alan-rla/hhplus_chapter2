@@ -14,7 +14,7 @@ export class DatabaseService implements TypeOrmOptionsFactory {
       logging: true,
       charset: 'utf8_general_ci',
       keepConnectionAlive: true,
-      entities: [__dirname + '/../entities/*.entity.{ts,js}'],
+      entities: [__dirname + '/../**/infrastructure/entities/*.entity.{ts,js}'],
       migrations: [__dirname + '/../database/migrations/*.{ts,js}'],
       synchronize: false,
       dropSchema: false,
