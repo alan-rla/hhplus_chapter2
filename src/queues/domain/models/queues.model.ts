@@ -1,63 +1,39 @@
-import { Expose } from 'class-transformer';
 import { QueueStatusEnum } from '../../../libs/types';
-import { IsDate, IsEnum, IsNumber, IsString, IsUUID } from 'class-validator';
+import { IsDate, IsEnum, IsNumber, IsOptional, IsString, IsUUID, ValidateIf } from 'class-validator';
 
 export class QueueRequestProps {
-  @Expose()
   @IsUUID()
+  @IsOptional()
   userId?: string;
-  @Expose()
+
   @IsNumber()
   eventId: number;
-  @Expose()
+
   @IsEnum(QueueStatusEnum)
+  @IsOptional()
   status?: QueueStatusEnum;
 }
 
-export class QueueResponseProps {
-  @Expose()
-  @IsNumber()
-  id: number;
-  @Expose()
-  @IsUUID()
-  userId: string;
-  @Expose()
-  @IsNumber()
-  eventId: number;
-  @Expose()
-  @IsEnum(QueueStatusEnum)
-  status: QueueStatusEnum;
-  @Expose()
-  @IsDate()
-  createdAt: Date;
-  @Expose()
-  @IsDate()
-  updatedAt: Date;
-  @Expose()
-  @IsDate()
-  deletedAt: Date;
-}
-
 export class Queue {
-  @Expose()
   @IsNumber()
   id: number;
-  @Expose()
+
   @IsString()
   userId: string;
-  @Expose()
+
   @IsNumber()
   eventId: number;
-  @Expose()
+
   @IsEnum(QueueStatusEnum)
   status: QueueStatusEnum;
-  @Expose()
+
   @IsDate()
   createdAt: Date;
-  @Expose()
+
   @IsDate()
   updatedAt: Date;
-  @Expose()
+
   @IsDate()
+  @ValidateIf((o) => o.deletedAt !== null)
   deletedAt: Date;
 }
