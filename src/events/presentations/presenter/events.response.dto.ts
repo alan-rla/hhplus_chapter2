@@ -1,10 +1,19 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Expose } from 'class-transformer';
-import { IsDate, IsEnum, IsInt, IsNotEmpty, IsPositive, IsString, IsUUID } from 'class-validator';
+
+import {
+  IsDate,
+  IsEnum,
+  IsInt,
+  IsNotEmpty,
+  IsPositive,
+  IsString,
+  IsUUID,
+  ValidateIf,
+  ValidateNested,
+} from 'class-validator';
 import { ReservationStatusEnum, SeatStatusEnum } from '../../../libs/types';
 
 export class EventDatesResponseDto {
-  @Expose()
   @ApiProperty({
     example: 1,
   })
@@ -13,7 +22,6 @@ export class EventDatesResponseDto {
   @IsNotEmpty()
   id: number;
 
-  @Expose()
   @ApiProperty({
     example: 1,
   })
@@ -22,7 +30,6 @@ export class EventDatesResponseDto {
   @IsNotEmpty()
   eventId: number;
 
-  @Expose()
   @ApiProperty({
     example: '2024-07-08T06:38:02.060Z',
   })
@@ -30,7 +37,6 @@ export class EventDatesResponseDto {
   @IsNotEmpty()
   eventDate: Date;
 
-  @Expose()
   @ApiProperty({
     example: 50,
   })
@@ -39,7 +45,6 @@ export class EventDatesResponseDto {
   @IsNotEmpty()
   seatCount: number;
 
-  @Expose()
   @ApiProperty({
     example: '2024-07-08T06:38:02.060Z',
   })
@@ -47,7 +52,6 @@ export class EventDatesResponseDto {
   @IsNotEmpty()
   bookStartDate: Date;
 
-  @Expose()
   @ApiProperty({
     example: '2024-07-08T06:38:02.060Z',
   })
@@ -55,7 +59,6 @@ export class EventDatesResponseDto {
   @IsNotEmpty()
   bookEndDate: Date;
 
-  @Expose()
   @ApiProperty({
     example: '2024-07-08T06:38:02.060Z',
   })
@@ -63,7 +66,6 @@ export class EventDatesResponseDto {
   @IsNotEmpty()
   createdAt: Date;
 
-  @Expose()
   @ApiProperty({
     example: '2024-07-08T06:38:02.060Z',
   })
@@ -71,17 +73,16 @@ export class EventDatesResponseDto {
   @IsNotEmpty()
   updatedAt: Date;
 
-  @Expose()
   @ApiProperty({
     example: '2024-07-08T06:38:02.060Z',
   })
   @IsDate()
+  @ValidateIf((o) => o.deletedAt !== null)
   @IsNotEmpty()
   deletedAt: Date;
 }
 
 class SeatProperty {
-  @Expose()
   @ApiProperty({
     example: 1,
   })
@@ -90,7 +91,6 @@ class SeatProperty {
   @IsNotEmpty()
   id: number;
 
-  @Expose()
   @ApiProperty({
     example: '스탠딩',
   })
@@ -98,7 +98,6 @@ class SeatProperty {
   @IsNotEmpty()
   name: string;
 
-  @Expose()
   @ApiProperty({
     example: 10000,
   })
@@ -109,7 +108,6 @@ class SeatProperty {
 }
 
 export class EventSeatsResponseDto {
-  @Expose()
   @ApiProperty({
     example: 1,
   })
@@ -118,7 +116,6 @@ export class EventSeatsResponseDto {
   @IsNotEmpty()
   id: number;
 
-  @Expose()
   @ApiProperty({
     example: 1,
   })
@@ -127,14 +124,12 @@ export class EventSeatsResponseDto {
   @IsNotEmpty()
   seatNumber: number;
 
-  @Expose()
   @ApiProperty({
     example: 'AVAILABLE',
   })
   @IsEnum(SeatStatusEnum)
   status: SeatStatusEnum;
 
-  @Expose()
   @ApiProperty({
     example: 1,
   })
@@ -143,7 +138,6 @@ export class EventSeatsResponseDto {
   @IsNotEmpty()
   eventPropertyId: number;
 
-  @Expose()
   @ApiProperty({
     example: 1,
   })
@@ -152,13 +146,12 @@ export class EventSeatsResponseDto {
   @IsNotEmpty()
   seatPropertyId: number;
 
-  @Expose()
+  @ValidateNested()
   @ApiProperty({ type: SeatProperty })
   seatProperty: SeatProperty;
 }
 
 export class ReservationResponseDto {
-  @Expose()
   @ApiProperty({
     example: 1,
   })
@@ -167,7 +160,6 @@ export class ReservationResponseDto {
   @IsNotEmpty()
   id: number;
 
-  @Expose()
   @ApiProperty({
     example: 1,
   })
@@ -176,7 +168,6 @@ export class ReservationResponseDto {
   @IsNotEmpty()
   seatId: number;
 
-  @Expose()
   @ApiProperty({
     example: 'ffd7a6d2-b742-4b7c-b7e4-a5e435435288',
   })
@@ -184,14 +175,12 @@ export class ReservationResponseDto {
   @IsNotEmpty()
   userId: string;
 
-  @Expose()
   @ApiProperty({
     example: 'RESERVED',
   })
   @IsEnum(ReservationStatusEnum)
   status: ReservationStatusEnum;
 
-  @Expose()
   @ApiProperty({
     example: '2024-07-08T06:38:02.060Z',
   })
@@ -199,7 +188,6 @@ export class ReservationResponseDto {
   @IsNotEmpty()
   createdAt: Date;
 
-  @Expose()
   @ApiProperty({
     example: '2024-07-08T06:38:02.060Z',
   })
@@ -207,15 +195,14 @@ export class ReservationResponseDto {
   @IsNotEmpty()
   updatedAt: Date;
 
-  @Expose()
   @ApiProperty({
     example: '2024-07-08T06:38:02.060Z',
   })
   @IsDate()
+  @ValidateIf((o) => o.deletedAt !== null)
   @IsNotEmpty()
   deletedAt: Date;
 
-  @Expose()
   @ApiProperty({
     example: 1,
   })
@@ -224,7 +211,6 @@ export class ReservationResponseDto {
   @IsNotEmpty()
   eventId: number;
 
-  @Expose()
   @ApiProperty({
     example: '공연 이름',
   })
@@ -232,7 +218,6 @@ export class ReservationResponseDto {
   @IsNotEmpty()
   eventName: string;
 
-  @Expose()
   @ApiProperty({
     example: 1,
   })
@@ -241,7 +226,6 @@ export class ReservationResponseDto {
   @IsNotEmpty()
   eventPropertyId: number;
 
-  @Expose()
   @ApiProperty({
     example: '2024-07-08T06:38:02.060Z',
   })
@@ -249,7 +233,6 @@ export class ReservationResponseDto {
   @IsNotEmpty()
   eventDate: Date;
 
-  @Expose()
   @ApiProperty({
     example: 50000,
   })
