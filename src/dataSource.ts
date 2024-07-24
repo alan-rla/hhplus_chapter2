@@ -11,7 +11,7 @@ export const dataSource = new DataSource({
   database: process.env.DB_DATABASE,
   logging: false,
   charset: 'utf8_general_ci', // 이모티콘 사용 가능하게 해줌
-  entities: [__dirname + '/**/infrastructure/entities/*.entity.{ts,js}'],
+  entities: [__dirname + '/infrastructures/entities/*.entity.{ts,js}'],
   migrations: [__dirname + '/database/migrations/*.{ts,js}'],
   synchronize: false, // TODO: 테이블 한번 만든 후 false로 변경해야 함!
   dropSchema: false,
