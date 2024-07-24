@@ -243,7 +243,6 @@ balance->>api: 사용자 잔액 반환
 | Payment         | 결제                 | 예약한 좌석 결제 정보    |
 | User Balance    | 사용자 잔액          |
 | Balance History | 잔액 충전, 사용 기록 |
-
 ![Image](https://github.com/alan-rla/hhplus_chapter2/assets/110752019/00b9440d-972b-44ff-8f40-805570be5bf7)
 
 ## API 명세서
