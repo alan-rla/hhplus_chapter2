@@ -3,6 +3,7 @@ import {
   EventsRepository,
   PaymentsRepository,
   QueuesRepository,
+  RedisLocksRepository,
   ReservationsRepository,
   SeatsRepository,
   UsersRepository,
@@ -10,6 +11,7 @@ import {
 import { EventsRepositoryImpl } from '@src/infrastructures/events/events.repository';
 import { PaymentsRepositoryImpl } from '@src/infrastructures/payments/payments.repository';
 import { QueuesRepositoryImpl } from '@src/infrastructures/queues/queues.repository';
+import { RedisLocksRepositoryImpl } from '@src/infrastructures/redis.locks/redis.locks.repository';
 import { ReservationsRepositoryImpl } from '@src/infrastructures/reservations/reservations.repository';
 import { SeatsRepositoryImpl } from '@src/infrastructures/seats/seats.repository';
 import { UsersRepositoryImpl } from '@src/infrastructures/users/users.repository';
@@ -38,5 +40,9 @@ export const repositories: Provider[] = [
   {
     provide: ReservationsRepository,
     useClass: ReservationsRepositoryImpl,
+  },
+  {
+    provide: RedisLocksRepository,
+    useClass: RedisLocksRepositoryImpl,
   },
 ];

@@ -1,4 +1,4 @@
 import { Type } from '@nestjs/common';
-import { QueueGuard } from '@src/libs/guards/queue.guard';
+import { EventPropertyLockGuard } from '@src/libs/guards/lock.guard';
 
-export const guards: Type<any>[] = [QueueGuard];
+export const guards: Type<any>[] = [EventPropertyLockGuard];
