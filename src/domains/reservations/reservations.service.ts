@@ -1,6 +1,6 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { Mapper } from '@src/libs/mappers';
-import { ReservationStatusEnum, SeatStatusEnum } from '@src/libs/types';
+import { ReservationStatusEnum } from '@src/libs/types';
 import { EventProperty } from '@src/domains/events/events.model';
 import { ReservationsRepository } from '@src/domains/repositories';
 import { Reservation } from '@src/domains/reservations/reservations.model';
@@ -11,7 +11,6 @@ export class ReservationsService {
   constructor(private readonly reservationsRepository: ReservationsRepository) {}
 
   async postReservation(seat: Seat, eventProperty: EventProperty, userId: string): Promise<Reservation> {
-    if (seat.status === SeatStatusEnum.OCCUPIED) throw new HttpException('SEAT_OCCUPIED', 500);
     return await this.reservationsRepository.postReservation(
       await Mapper.classTransformer(Reservation, {
         seatId: seat.id,
