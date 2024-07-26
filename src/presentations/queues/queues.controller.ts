@@ -27,22 +27,22 @@ export class QueuesController {
     return await Mapper.classTransformer(QueueResponseDto, result);
   }
 
-  private isActivatorRunning = false;
-  @Cron('0 */10 * * * *', { name: 'queueActivateManager' })
-  async queueActivateManager(): Promise<void> {
-    if (this.isActivatorRunning) {
-      Logger.log('task already running');
-      return;
-    }
+  // private isActivatorRunning = false;
+  // @Cron('0 */10 * * * *', { name: 'queueActivateManager' })
+  // async queueActivateManager(): Promise<void> {
+  //   if (this.isActivatorRunning) {
+  //     Logger.log('task already running');
+  //     return;
+  //   }
 
-    this.isActivatorRunning = true;
-    await this.queuesFacade.queueActivateManager();
-    this.isActivatorRunning = false;
-    return;
-  }
+  //   this.isActivatorRunning = true;
+  //   await this.queuesFacade.queueActivateManager();
+  //   this.isActivatorRunning = false;
+  //   return;
+  // }
 
   private isExpirerRunning = false;
-  @Cron('0 */10 * * * *', { name: 'queueExpireManager' })
+  @Cron('0 */5 * * * *', { name: 'queueExpireManager' })
   async queueExpireManager(): Promise<void> {
     if (this.isExpirerRunning) {
       Logger.log('task already running');
