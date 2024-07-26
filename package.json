@@ -41,6 +41,7 @@
     "class-validator": "^0.14.1",
     "dayjs": "^1.11.11",
     "eslint-plugin-no-relative-import-paths": "^1.5.5",
+    "ioredis": "^5.4.1",
     "mysql2": "^3.10.2",
     "nest-winston": "^1.9.7",
     "reflect-metadata": "^0.2.2",
