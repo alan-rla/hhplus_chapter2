@@ -1,7 +1,7 @@
 import { BalanceHistory, UserBalance } from '@src/domains/users/users.model';
 
 export abstract class UsersRepository {
-  abstract getUserBalanceByUserId(userId: string): Promise<UserBalance>;
+  abstract getUserBalanceByUserId(userId: string, lock?: boolean): Promise<UserBalance>;
 
   abstract putUserBalance(userId: string, balance: number): Promise<boolean>;
 

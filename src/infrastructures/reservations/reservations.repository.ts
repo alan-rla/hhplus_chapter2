@@ -25,7 +25,9 @@ export class ReservationsRepositoryImpl implements ReservationsRepository {
 
   async getReservationById(id: number): Promise<Reservation> {
     const entity = await Mapper.classTransformer(ReservationEntity, { id });
-    const reservation = await this.dataSource.getRepository(ReservationEntity).findOne({ where: entity });
+    const reservation = await this.dataSource
+      .getRepository(ReservationEntity)
+      .findOne({ where: entity, lock: { mode: 'optimistic', version: 1 } });
     return await Mapper.classTransformer(Reservation, reservation);
   }
 

@@ -7,8 +7,8 @@ import { Transactional } from 'typeorm-transactional';
 export class UsersService {
   constructor(private readonly usersRepository: UsersRepository) {}
 
-  async getUserBalanceByUserId(userId: string): Promise<UserBalance> {
-    const userBalance = await this.usersRepository.getUserBalanceByUserId(userId);
+  async getUserBalanceByUserId(userId: string, lock?: true): Promise<UserBalance> {
+    const userBalance = await this.usersRepository.getUserBalanceByUserId(userId, lock);
     if (!userBalance) throw new HttpException('USER_BALANCE_NOT_FOUND', 500);
     return userBalance;
   }

@@ -11,9 +11,11 @@ import { BalanceHistoryEntity, UserBalanceEntity } from '@src/infrastructures/en
 export class UsersRepositoryImpl implements UsersRepository {
   constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
 
-  async getUserBalanceByUserId(userId: string): Promise<UserBalance> {
+  async getUserBalanceByUserId(userId: string, lock?: boolean): Promise<UserBalance> {
     const entity = await Mapper.classTransformer(UserBalanceEntity, { userId });
-    const userBalance = await this.dataSource.getRepository(UserBalanceEntity).findOne({ where: entity });
+    const findCondition = { where: entity };
+    if (lock) Object.assign(findCondition, { lock: { mode: 'optimistic', version: 1 } });
+    const userBalance = await this.dataSource.getRepository(UserBalanceEntity).findOne(findCondition);
     return await Mapper.classTransformer(UserBalance, userBalance);
   }
 
