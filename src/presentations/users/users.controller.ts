@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Param, Put } from '@nestjs/common';
+import { Body, Controller, Get, Param, Put, UseGuards } from '@nestjs/common';
 import { GetUserDto, PutUserBalanceDto } from './users.dto';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { PutUserBalanceResponse, GetUserBalanceResponse } from './users.response.dto';
 import { Mapper } from '@src/libs/mappers';
 import { UsersFacade } from '@src/applications/users/users.facade';
+import { PointLockGuard } from '@src/libs/guards/lock.guard';
 
 @Controller('users')
 export class UsersController {
@@ -17,6 +18,7 @@ export class UsersController {
     return await Mapper.classTransformer(GetUserBalanceResponse, result);
   }
 
+  @UseGuards(PointLockGuard)
   @ApiResponse({ type: PutUserBalanceResponse, status: 201 })
   @ApiOperation({ summary: '사용자 잔액 충전' })
   @Put(':userId/balance/charge')

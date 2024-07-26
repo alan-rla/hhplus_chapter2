@@ -1,7 +1,7 @@
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Mapper } from '@src/libs/mappers';
-import { QueueGuard } from '@src/libs/guards/queue.guard';
+import { EventPropertyLockGuard } from '@src/libs/guards/lock.guard';
 import { ReservationsFacade } from '@src/applications/reservations/reservations.facade';
 import { PostReservationDto } from '@src/presentations/reservations/reservations.dto';
 import { ReservationResponse } from '@src/presentations/reservations/reservations.response';
@@ -10,7 +10,7 @@ import { ReservationResponse } from '@src/presentations/reservations/reservation
 export class ReservationssController {
   constructor(private readonly reservationsFacade: ReservationsFacade) {}
 
-  @UseGuards(QueueGuard)
+  @UseGuards(EventPropertyLockGuard)
   @ApiBody({ type: PostReservationDto })
   @ApiResponse({ type: ReservationResponse })
   @ApiOperation({ summary: '좌석 예약' })
