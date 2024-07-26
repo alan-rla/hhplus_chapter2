@@ -17,9 +17,13 @@ export class EventsService {
     return event;
   }
 
-  async getEventProperties(eventId: number): Promise<EventProperty[]> {
+  async getAllEventProperties(): Promise<EventProperty[]> {
+    return await this.eventsRepository.getAllEventProperties();
+  }
+
+  async getEventPropertiesByEventId(eventId: number): Promise<EventProperty[]> {
     const now = dayjs(Date.now()).toDate();
-    return await this.eventsRepository.getEventProperties(eventId, now);
+    return await this.eventsRepository.getEventPropertiesByEventId(eventId, now);
   }
 
   async getEventPropertyById(eventPropertyId: number): Promise<EventProperty> {

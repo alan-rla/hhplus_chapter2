@@ -21,7 +21,14 @@ export class EventsRepositoryImpl implements EventsRepository {
     return await Mapper.classTransformer(Event, event);
   }
 
-  async getEventProperties(eventId: number, dateNow: Date): Promise<EventProperty[]> {
+  async getAllEventProperties(): Promise<EventProperty[]> {
+    const eventProperties = await this.dataSource.getRepository(EventPropertyEntity).find();
+    return await Promise.all(
+      eventProperties.map(async (entity) => await Mapper.classTransformer(EventProperty, entity)),
+    );
+  }
+
+  async getEventPropertiesByEventId(eventId: number, dateNow: Date): Promise<EventProperty[]> {
     const eventProperties = await this.dataSource
       .getRepository(EventPropertyEntity)
       .findBy({ eventId, bookStartDate: LessThanOrEqual(dateNow), bookEndDate: MoreThanOrEqual(dateNow) });

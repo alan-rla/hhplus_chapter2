@@ -10,7 +10,7 @@ export class EventsFacade {
     return await this.eventsService.getAllEvents();
   }
 
-  async getEventProperties(eventId: number): Promise<EventProperty[]> {
-    return await this.eventsService.getEventProperties(eventId);
+  async getEventPropertiesByEventId(eventId: number): Promise<EventProperty[]> {
+    return await this.eventsService.getEventPropertiesByEventId(eventId);
   }
 }

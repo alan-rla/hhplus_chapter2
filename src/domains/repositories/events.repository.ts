@@ -5,7 +5,9 @@ export abstract class EventsRepository {
 
   abstract getEventById(id: number): Promise<Event>;
 
-  abstract getEventProperties(eventId: number, dateNow: Date): Promise<EventProperty[]>;
+  abstract getAllEventProperties(): Promise<EventProperty[]>;
+
+  abstract getEventPropertiesByEventId(eventId: number, dateNow: Date): Promise<EventProperty[]>;
 
   abstract getEventPropertyById(id: number): Promise<EventProperty>;
 }
