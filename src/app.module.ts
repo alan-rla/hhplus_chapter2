@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { DatabaseModule } from './database/database.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DatabaseService } from './database/database.service';
@@ -12,6 +12,7 @@ import { repositories } from '@src/infrastructures';
 import { services } from '@src/domains';
 import { facades } from '@src/applications';
 import { guards } from '@src/libs/guards';
+import { RedisModule } from '@nestjs-modules/ioredis';
 
 @Module({
   imports: [
@@ -24,6 +25,15 @@ import { guards } from '@src/libs/guards';
         if (!options) throw new Error('Invalid options passed');
         return addTransactionalDataSource(new DataSource(dataSourceOptions));
       },
+    }),
+    RedisModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => ({
+        type: 'single',
+        host: configService.get('REDIS_HOST'),
+        port: configService.get('REDIS_PORT'),
+      }),
     }),
     ScheduleModule.forRoot(),
   ],
