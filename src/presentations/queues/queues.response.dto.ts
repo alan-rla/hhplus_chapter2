@@ -1,57 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { QueueStatusEnum } from '@src/libs/types';
-import { IsDate, IsEnum, IsInt, IsNotEmpty, IsPositive, IsUUID, ValidateIf } from 'class-validator';
+import { IsBoolean, IsNumber } from 'class-validator';
 
-export class QueueResponseDto {
+export class QueueResponse {
   @ApiProperty({
-    example: 1,
+    example: true,
   })
-  @IsInt()
-  @IsPositive()
-  @IsNotEmpty()
-  id: number;
+  @IsBoolean()
+  queue: boolean;
+}
 
+export class QueueTimeLeftResponse {
   @ApiProperty({
-    example: 'ffd7a6d2-b742-4b7c-b7e4-a5e435435288',
+    example: 5,
   })
-  @IsUUID()
-  @IsNotEmpty()
-  userId: string;
-
-  @ApiProperty({
-    example: 1,
-  })
-  @IsInt()
-  @IsPositive()
-  @IsNotEmpty()
-  eventId: number;
-
-  @ApiProperty({
-    example: 'STANDBY',
-    enum: QueueStatusEnum,
-  })
-  @IsEnum(QueueStatusEnum)
-  @IsNotEmpty()
-  status: QueueStatusEnum;
-
-  @ApiProperty({
-    example: '2024-07-08T06:38:02.060Z',
-  })
-  @IsDate()
-  @IsNotEmpty()
-  createdAt: Date;
-
-  @ApiProperty({
-    example: '2024-07-08T06:38:02.060Z',
-  })
-  @IsDate()
-  @IsNotEmpty()
-  updatedAt: Date;
-
-  @ApiProperty({
-    example: '2024-07-08T06:38:02.060Z',
-  })
-  @IsDate()
-  @ValidateIf((o) => o.deletedAt !== null)
-  deletedAt: Date;
+  @IsNumber()
+  minutesLeft: number;
 }

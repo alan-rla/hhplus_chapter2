@@ -1,72 +1,74 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { Event } from '@src/domains/events/events.model';
-import { Queue } from '@src/domains/queues/queues.model';
-import { QueuesRepository } from '@src/domains/repositories/queues.repository';
-import { QueueStatusEnum } from '@src/libs/types';
+import { QueueTimeLeft } from '@src/domains/queues/queues.model';
+import { QueuesRepository } from '@src/domains/repositories';
+
 import dayjs from 'dayjs';
 
 @Injectable()
 export class QueuesService {
   constructor(private readonly queuesRepository: QueuesRepository) {}
 
-  async getLatestQueueByUserIdAndEventId(userId: string, eventId: number): Promise<Queue> {
-    return await this.queuesRepository.getLatestQueueByUserIdAndEventId(userId, eventId);
+  private waitingQueueKey = 'WAITING_QUEUE';
+  private activeTokenKey = 'ACTIVE_TOKEN';
+
+  async joinWaitingQueue(userId: string): Promise<boolean> {
+    const save = await this.queuesRepository.saveSortedSet(this.waitingQueueKey, userId);
+    if (save === 0) throw new HttpException('USER_ALREADY_IN_QUEUE', 500);
+    return save === 1;
   }
 
-  async post(userId: string, eventId: number, queue: Queue): Promise<Queue> {
-    if (!queue || queue.status === QueueStatusEnum.EXPIRED) return await this.queuesRepository.post(userId, eventId);
-    else if (queue.status === QueueStatusEnum.STANDBY || queue.status === QueueStatusEnum.ACTIVATED)
-      throw new HttpException('DUPLICATE_QUEUE', 500);
+  // userId의 점수 (Date.now()) 없으면 null
+  async getUserInWaitingQueue(userId: string): Promise<string> {
+    return await this.queuesRepository.getSortedSetByKeyAndUserId(this.waitingQueueKey, userId);
   }
 
-  async expireQueue(queue: Queue): Promise<boolean> {
-    if (!queue || queue.status === QueueStatusEnum.EXPIRED) throw new HttpException('QUEUE_NOT_FOUND', 500);
-    else return await this.queuesRepository.putQueueStatus([queue.id], QueueStatusEnum.EXPIRED);
+  // userId의 점수 (Date.now()) 없으면 null
+  async getTimeLeftInWaitingQueue(userId: string): Promise<QueueTimeLeft> {
+    const rank = await this.queuesRepository.getSortedSetDateAscRank(this.waitingQueueKey, userId);
+    return { minutesLeft: Math.ceil(rank / 100) };
   }
 
-  async queueActivateManager(events: Event[]): Promise<void> {
-    for (const event of events) {
-      const eventId = event.id;
-      const standBy = QueueStatusEnum.STANDBY;
-      const activated = QueueStatusEnum.ACTIVATED;
-      /* eslint-disable */
-      const [standByQueues, standByCount] = await this.queuesRepository.getQueuesByEventIdAndStatus(eventId, standBy);
-      const [activatedQueues, activatedCount] = await this.queuesRepository.getQueuesByEventIdAndStatus(
-        eventId,
-        activated,
-      );
-      /* eslint-enable */
-      const availableQueues = 5 - activatedCount;
-      const queueIds = [];
+  async getUsersInWaitingQueue(amount: number): Promise<string[]> {
+    return await this.queuesRepository.getSortedSetDateAsc(this.waitingQueueKey, amount);
+  }
 
-      for (let i = 0; i < availableQueues; i++) {
-        if (!standByQueues[i]) break;
-        queueIds.push(standByQueues[i].id);
-      }
+  async removeUsersInWaitingQueue(userIds: string[]): Promise<void> {
+    await this.queuesRepository.removeSortedSet(this.waitingQueueKey, userIds);
+  }
 
-      await this.queuesRepository.putQueueStatus(queueIds, activated);
+  async joinActiveToken(userIds: string[]): Promise<void> {
+    const members = [];
+    for (const userId of userIds) members.push(`USER#${userId}:DATE#${new Date().toISOString()}`);
+    await this.queuesRepository.saveSet(this.activeTokenKey, members);
+  }
+
+  async getAllUsersInActiveToken(): Promise<string[]> {
+    return await this.queuesRepository.getAllMembersInSet(this.activeTokenKey);
+  }
+
+  async getUserInActiveToken(userId: string): Promise<string> {
+    const pattern = `USER#${userId}:*`;
+    return await this.queuesRepository.scanSet(this.activeTokenKey, pattern, 1)[0];
+  }
+
+  async removeUsersInActiveToken(members: string[]): Promise<void> {
+    await this.queuesRepository.removeMembersInSet(this.activeTokenKey, members);
+  }
+
+  async tokenActivateManager(): Promise<void> {
+    const userIds = await this.getUsersInWaitingQueue(100);
+    await this.joinActiveToken(userIds);
+    await this.removeUsersInWaitingQueue(userIds);
+  }
+
+  async tokenExpireManager(): Promise<void> {
+    const members = await this.getAllUsersInActiveToken();
+    const membersToBeExpired = [];
+    const twentyMinutesAgo = dayjs().subtract(20, 'minute');
+    for (const member of members) {
+      const createdAt = member.split('DATE#')[1];
+      if (twentyMinutesAgo.isAfter(createdAt)) membersToBeExpired.push(member);
     }
-  }
-
-  async queueExpireManager(events: Event[]): Promise<void> {
-    for (const event of events) {
-      const eventId = event.id;
-      const expired = QueueStatusEnum.EXPIRED;
-      const activated = QueueStatusEnum.ACTIVATED;
-      /* eslint-disable */
-      const [activatedQueues, activatedCount] = await this.queuesRepository.getQueuesByEventIdAndStatus(
-        eventId,
-        activated,
-      );
-      /* eslint-enable */
-      const queueIds = [];
-
-      for (const activatedQueue of activatedQueues) {
-        if (activatedQueue.updatedAt < dayjs(Date.now()).subtract(20, 'minute').toDate())
-          queueIds.push(activatedQueue.id);
-      }
-
-      await this.queuesRepository.putQueueStatus(queueIds, expired);
-    }
+    await this.removeUsersInActiveToken(membersToBeExpired);
   }
 }

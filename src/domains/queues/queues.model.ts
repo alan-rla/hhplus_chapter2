@@ -1,5 +1,5 @@
 import { QueueStatusEnum } from '@src/libs/types';
-import { IsDate, IsEnum, IsNumber, IsOptional, IsString, IsUUID, ValidateIf } from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, IsUUID } from 'class-validator';
 
 export class QueueRequestProps {
   @IsUUID()
@@ -14,26 +14,7 @@ export class QueueRequestProps {
   status?: QueueStatusEnum;
 }
 
-export class Queue {
+export class QueueTimeLeft {
   @IsNumber()
-  id: number;
-
-  @IsString()
-  userId: string;
-
-  @IsNumber()
-  eventId: number;
-
-  @IsEnum(QueueStatusEnum)
-  status: QueueStatusEnum;
-
-  @IsDate()
-  createdAt: Date;
-
-  @IsDate()
-  updatedAt: Date;
-
-  @IsDate()
-  @ValidateIf((o) => o.deletedAt !== null)
-  deletedAt: Date;
+  minutesLeft: number;
 }

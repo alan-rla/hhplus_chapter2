@@ -1,12 +1,21 @@
-import { QueueStatusEnum } from '@src/libs/types';
-import { Queue } from '@src/domains/queues/queues.model';
-
 export abstract class QueuesRepository {
-  abstract post(userId: string, eventId: number): Promise<Queue>;
+  abstract getSortedSetCount(key: string): Promise<number>;
 
-  abstract getLatestQueueByUserIdAndEventId(userId: string, eventId: number): Promise<Queue>;
+  abstract getSortedSetDateAsc(key: string, limit?: number): Promise<string[]>;
 
-  abstract getQueuesByEventIdAndStatus(eventId: number, status: QueueStatusEnum): Promise<[Queue[], number]>;
+  abstract getSortedSetDateAscRank(key: string, userId: string): Promise<number>;
 
-  abstract putQueueStatus(ids: number[], status: QueueStatusEnum): Promise<boolean>;
+  abstract getSortedSetByKeyAndUserId(key: string, userId: string): Promise<string>;
+
+  abstract saveSortedSet(key: string, userId: string): Promise<number>;
+
+  abstract removeSortedSet(key: string, userIds: string[]): Promise<void>;
+
+  abstract saveSet(key: string, members: string[]): Promise<void>;
+
+  abstract getAllMembersInSet(key: string): Promise<string[]>;
+
+  abstract scanSet(key: string, pattern: string, count: number): Promise<string[]>;
+
+  abstract removeMembersInSet(key: string, members: string[]): Promise<void>;
 }

@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { IsInt, IsNotEmpty, IsPositive, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsUUID } from 'class-validator';
 
 export class CreateQueueDto {
   @ApiProperty({
@@ -9,14 +8,6 @@ export class CreateQueueDto {
   @IsUUID()
   @IsNotEmpty()
   userId: string;
-
-  @ApiProperty({
-    example: 1,
-  })
-  @IsInt()
-  @IsPositive()
-  @IsNotEmpty()
-  eventId: number;
 }
 
 export class GetQueueDto {
@@ -26,13 +17,4 @@ export class GetQueueDto {
   @IsUUID()
   @IsNotEmpty()
   userId: string;
-
-  @ApiProperty({
-    example: 1,
-  })
-  @Type(() => Number)
-  @IsInt()
-  @IsPositive()
-  @IsNotEmpty()
-  eventId: number;
 }
