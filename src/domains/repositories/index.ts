@@ -4,4 +4,4 @@ export * from './users.repository';
 export * from './seats.repository';
 export * from './reservation.repository';
 export * from './payment.repository';
-export * from './redis.locks.repository';
+export * from './redis.cache.repository';
