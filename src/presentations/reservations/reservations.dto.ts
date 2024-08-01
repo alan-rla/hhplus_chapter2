@@ -11,6 +11,22 @@ export class PostReservationDto {
   seatId: number;
 
   @ApiProperty({
+    example: 1,
+  })
+  @IsInt()
+  @IsPositive()
+  @IsNotEmpty()
+  eventId: number;
+
+  @ApiProperty({
+    example: 1,
+  })
+  @IsInt()
+  @IsPositive()
+  @IsNotEmpty()
+  eventPropertyId: number;
+
+  @ApiProperty({
     example: 'ffd7a6d2-b742-4b7c-b7e4-a5e435435288',
   })
   @IsUUID()
