@@ -4,7 +4,7 @@ import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { PutUserBalanceResponse, GetUserBalanceResponse } from './users.response.dto';
 import { Mapper } from '@src/libs/mappers';
 import { UsersFacade } from '@src/applications/users/users.facade';
-import { PointLockGuard } from '@src/libs/guards/lock.guard';
+import { PointLockGuard } from '@src/libs/guards/queue.guard';
 
 @Controller('users')
 export class UsersController {
@@ -15,7 +15,7 @@ export class UsersController {
   @Get(':userId/balance')
   async getUserBalance(@Param() param: GetUserDto): Promise<GetUserBalanceResponse> {
     const result = await this.usersFacade.getUserBalanceByUserId(param.userId);
-    return await Mapper.classTransformer(GetUserBalanceResponse, result);
+    return Mapper.classTransformer(GetUserBalanceResponse, result);
   }
 
   @UseGuards(PointLockGuard)
@@ -27,6 +27,6 @@ export class UsersController {
     @Body() body: PutUserBalanceDto,
   ): Promise<PutUserBalanceResponse> {
     const result = await this.usersFacade.charge(param.userId, body.amount);
-    return await Mapper.classTransformer(PutUserBalanceResponse, result);
+    return Mapper.classTransformer(PutUserBalanceResponse, result);
   }
 }
