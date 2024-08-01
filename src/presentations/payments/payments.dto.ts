@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsInt, IsNotEmpty, IsPositive, IsUUID } from 'class-validator';
+import { IsInt, IsNotEmpty, IsPositive } from 'class-validator';
 
 export class PayReservationDto {
   @ApiProperty({
@@ -13,9 +13,11 @@ export class PayReservationDto {
   reservationId: number;
 
   @ApiProperty({
-    example: 'ffd7a6d2-b742-4b7c-b7e4-a5e435435288',
+    example: 1,
   })
-  @IsUUID()
+  @Type(() => Number)
+  @IsInt()
+  @IsPositive()
   @IsNotEmpty()
-  userId: string;
+  seatId: number;
 }

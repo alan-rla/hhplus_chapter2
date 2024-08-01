@@ -11,7 +11,7 @@ export class PaymentsRepositoryImpl implements PaymentsRepository {
   constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
 
   async postPayment(reservationId: number, balanceHistoryId: number): Promise<Payment> {
-    const entity = await Mapper.classTransformer(PaymentEntity, { reservationId, balanceHistoryId });
+    const entity = Mapper.classTransformer(PaymentEntity, { reservationId, balanceHistoryId });
     const payment = await this.dataSource
       .createQueryBuilder()
       .insert()
@@ -19,6 +19,6 @@ export class PaymentsRepositoryImpl implements PaymentsRepository {
       .values(entity)
       .returning('*')
       .execute();
-    return await Mapper.classTransformer(Payment, payment.raw[0]);
+    return Mapper.classTransformer(Payment, payment.raw[0]);
   }
 }
