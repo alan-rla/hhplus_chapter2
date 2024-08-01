@@ -12,36 +12,44 @@ export class EventsRepositoryImpl implements EventsRepository {
 
   async getAllEvents(): Promise<Event[]> {
     const events = await this.dataSource.getRepository(EventEntity).find();
-    return await Promise.all(events.map(async (entity) => await Mapper.classTransformer(Event, entity)));
+    return events.map((entity) => Mapper.classTransformer(Event, entity));
   }
 
   async getEventById(id: number): Promise<Event> {
-    const entity = await Mapper.classTransformer(EventEntity, { id });
+    const entity = Mapper.classTransformer(EventEntity, { id });
     const event = await this.dataSource.getRepository(EventEntity).findOne({ where: entity });
-    return await Mapper.classTransformer(Event, event);
+    return Mapper.classTransformer(Event, event);
   }
 
   async getAllEventProperties(): Promise<EventProperty[]> {
     const eventProperties = await this.dataSource.getRepository(EventPropertyEntity).find();
-    return await Promise.all(
-      eventProperties.map(async (entity) => await Mapper.classTransformer(EventProperty, entity)),
-    );
+    return eventProperties.map((entity) => Mapper.classTransformer(EventProperty, entity));
   }
 
   async getEventPropertiesByEventId(eventId: number, dateNow: Date): Promise<EventProperty[]> {
     const eventProperties = await this.dataSource
       .getRepository(EventPropertyEntity)
       .findBy({ eventId, bookStartDate: LessThanOrEqual(dateNow), bookEndDate: MoreThanOrEqual(dateNow) });
-    return await Promise.all(
-      eventProperties.map(async (entity) => await Mapper.classTransformer(EventProperty, entity)),
-    );
+    return eventProperties.map((entity) => Mapper.classTransformer(EventProperty, entity));
   }
 
-  async getEventPropertyById(id: number): Promise<EventProperty> {
-    const entity = await Mapper.classTransformer(EventPropertyEntity, { id });
+  async getEventPropertyById(id: number, lock?: boolean): Promise<EventProperty> {
+    const entity = Mapper.classTransformer(EventPropertyEntity, { id });
+    const findCondition = { where: entity, relations: { event: true } };
+    if (lock) Object.assign(findCondition, { lock: { mode: 'optimistic', version: 1 } });
+    const eventProperty = await this.dataSource.getRepository(EventPropertyEntity).findOne(findCondition);
+    return Mapper.classTransformer(EventProperty, eventProperty);
+  }
+
+  async putEventPropertySeatCount(id: number, seatCount: number): Promise<boolean> {
+    const entity = Mapper.classTransformer(EventProperty, { seatCount });
     const eventProperty = await this.dataSource
-      .getRepository(EventPropertyEntity)
-      .findOne({ where: entity, relations: { event: true } });
-    return await Mapper.classTransformer(EventProperty, eventProperty);
+      .createQueryBuilder()
+      .update(EventProperty)
+      .set(entity)
+      .where('id = :id', { id })
+      .execute();
+
+    return eventProperty.affected[0] ? true : false;
   }
 }

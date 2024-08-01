@@ -9,5 +9,7 @@ export abstract class EventsRepository {
 
   abstract getEventPropertiesByEventId(eventId: number, dateNow: Date): Promise<EventProperty[]>;
 
-  abstract getEventPropertyById(id: number): Promise<EventProperty>;
+  abstract getEventPropertyById(id: number, lock?: boolean): Promise<EventProperty>;
+
+  abstract putEventPropertySeatCount(id: number, seatCount: number): Promise<boolean>;
 }
