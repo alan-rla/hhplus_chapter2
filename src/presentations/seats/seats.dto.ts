@@ -10,5 +10,14 @@ export class GetSeatsDto {
   @IsInt()
   @IsPositive()
   @IsNotEmpty()
+  eventId: number;
+
+  @ApiProperty({
+    example: 1,
+  })
+  @Type(() => Number)
+  @IsInt()
+  @IsPositive()
+  @IsNotEmpty()
   eventPropertyId: number;
 }

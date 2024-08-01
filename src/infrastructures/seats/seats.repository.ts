@@ -12,19 +12,19 @@ export class SeatsRepositoryImpl implements SeatsRepository {
   constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
 
   async getSeats(eventPropertyId: number): Promise<Seat[]> {
-    const entity = await Mapper.classTransformer(SeatEntity, { eventPropertyId });
+    const entity = Mapper.classTransformer(SeatEntity, { eventPropertyId });
     const seats = await this.dataSource
       .getRepository(SeatEntity)
       .find({ where: entity, relations: { seatProperty: true } });
-    return await Promise.all(seats.map(async (entity) => await Mapper.classTransformer(Seat, entity)));
+    return seats.map((entity) => Mapper.classTransformer(Seat, entity));
   }
 
-  async getSeatById(id: number): Promise<Seat> {
-    const entity = await Mapper.classTransformer(SeatEntity, { id });
-    const seat = await this.dataSource
-      .getRepository(SeatEntity)
-      .findOne({ where: entity, lock: { mode: 'pessimistic_write' } });
-    return await Mapper.classTransformer(Seat, seat);
+  async getSeatById(id: number, lock?: boolean): Promise<Seat> {
+    const entity = Mapper.classTransformer(SeatEntity, { id });
+    const findCondition = { where: entity, relations: { seatProperty: true } };
+    if (lock) Object.assign(findCondition, { lock: { mode: 'optimistic', version: 1 } });
+    const seat = await this.dataSource.getRepository(SeatEntity).findOne(findCondition);
+    return Mapper.classTransformer(Seat, seat);
   }
 
   async putSeatStatus(id: number, status: SeatStatusEnum): Promise<boolean> {
